@@ -6,7 +6,7 @@ Most of them are genuinely impressive in parts. Some have ideas I haven't seen e
 
 This is a summary of what's missing and what Athena is trying to be instead.
 
-![Athena Mini inside Obsidian](<assets/Athena.png>)
+![Athena](<assets/Athena.png>)
 
 ---
 
