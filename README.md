@@ -606,11 +606,11 @@ Others are architectural experiments or longer-term ideas.
 
 Documentation will increasingly distinguish between:
 
-**Implemented** — currently functional
+**Implemented** - currently functional
 
-**Experimental** — implemented or prototyped but actively changing
+**Experimental** - implemented or prototyped but actively changing
 
-**Planned** — part of the intended direction but not yet implemented
+**Planned** - part of the intended direction but not yet implemented
 
 Athena should be considered an evolving experimental platform rather than a finished product.
 
