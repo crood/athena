@@ -1,0 +1,18 @@
+[
+  {
+    "id": "introducing-athena",
+    "title": "Introducing Athena",
+    "date": "2026-08-17",
+    "summary": "Why I started building a new AI harness, what I found missing in every existing one, and where Athena is headed.",
+    "file": "posts/2026-08-17-introducing-athena.md",
+    "tags": ["athena", "harness", "intro"]
+  },
+  {
+    "id": "event-driven-architecture",
+    "title": "Why Athena is Event-Driven",
+    "date": "2026-08-10",
+    "summary": "The case for sourcing system state from the infrastructure itself rather than from model output — and what this makes possible.",
+    "file": "posts/2026-08-10-event-driven-architecture.md",
+    "tags": ["architecture", "events"]
+  }
+]

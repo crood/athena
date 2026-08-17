@@ -1,0 +1,1296 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Athena</title>
+  <meta name="description" content="An open-source, model-agnostic AI harness built to explore what happens when an AI system is allowed to extend beyond the boundaries of a chat window.">
+  <script src="https://cdn.jsdelivr.net/npm/marked@9.1.6/marked.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #080a14;
+      --surface-1:   rgba(12, 16, 34, 0.72);
+      --surface-2:   rgba(15, 20, 42, 0.88);
+      --border:      rgba(48, 80, 200, 0.16);
+      --border-h:    rgba(61, 110, 255, 0.35);
+      --text:        #d4e2ff;
+      --text-dim:    #7a90bb;
+      --text-bright: #eef4ff;
+      --accent:      #3d6eff;
+      --accent-faint:rgba(61, 110, 255, 0.10);
+      --rain-head:   #c0d8ff;
+      --rain-body:   #1e3a99;
+      --mono: ui-monospace, 'Cascadia Code', 'SF Mono', Consolas, monospace;
+      --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      --max: 740px;
+      --nav-h: 48px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 15px;
+      line-height: 1.75;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    /* ─── Canvas ─── */
+    #rain {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ─── Layout shell ─── */
+    .wrap {
+      position: relative;
+      z-index: 1;
+    }
+
+    .inner {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 0 28px;
+    }
+
+    /* ─── Nav ─── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: var(--nav-h);
+      z-index: 100;
+      background: rgba(8, 10, 20, 0.80);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 28px;
+    }
+
+    .nav-logo {
+      font-family: var(--mono);
+      font-size: 13px;
+      letter-spacing: 0.22em;
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .nav-links {
+      margin-left: auto;
+      display: flex;
+      gap: 28px;
+      align-items: center;
+    }
+
+    .nav-links a {
+      font-size: 12px;
+      letter-spacing: 0.05em;
+      color: var(--text-dim);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .nav-links a:hover { color: var(--text); }
+
+    .nav-links .nav-gh {
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 4px 12px;
+      color: var(--text);
+    }
+
+    .nav-links .nav-gh:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ─── Hero ─── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-top: calc(var(--nav-h) + 60px);
+      padding-bottom: 80px;
+    }
+
+    .hero-eyebrow {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .hero-eyebrow::after {
+      content: '';
+      display: block;
+      width: 40px;
+      height: 1px;
+      background: var(--accent);
+      opacity: 0.4;
+    }
+
+    .hero h1 {
+      font-family: var(--mono);
+      font-size: clamp(58px, 9vw, 108px);
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      color: var(--text-bright);
+      line-height: 1;
+      margin-bottom: 28px;
+      text-shadow: 0 0 80px rgba(61, 110, 255, 0.35);
+      animation: flicker 8s infinite;
+    }
+
+    @keyframes flicker {
+      0%,96%,100%  { opacity: 1; }
+      97%          { opacity: 0.92; }
+      98%          { opacity: 1; }
+      99%          { opacity: 0.95; }
+    }
+
+    .hero-sub {
+      font-size: 17px;
+      color: var(--accent);
+      font-weight: 400;
+      letter-spacing: 0.01em;
+      margin-bottom: 20px;
+      opacity: 0.85;
+    }
+
+    .hero-desc {
+      max-width: 540px;
+      color: var(--text-dim);
+      font-size: 15px;
+      line-height: 1.8;
+      margin-bottom: 40px;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      font-family: var(--mono);
+      text-decoration: none;
+      padding: 10px 22px;
+      border-radius: 4px;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-primary:hover { background: #5580ff; }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-dim);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { border-color: var(--border-h); color: var(--text); }
+
+    .scroll-hint {
+      margin-top: 64px;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      opacity: 0.45;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .scroll-hint .arr { animation: bob 1.8s ease-in-out infinite; display: inline-block; }
+    @keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(5px)} }
+
+    /* ─── Section frame ─── */
+    section {
+      padding: 88px 28px;
+      max-width: var(--max);
+      margin: 0 auto;
+    }
+
+    .fade-rule {
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--border) 30%, var(--border) 70%, transparent);
+      margin: 0 28px;
+    }
+
+    .section-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      color: var(--accent);
+      text-transform: uppercase;
+      opacity: 0.7;
+      margin-bottom: 10px;
+    }
+
+    h2 {
+      font-size: 28px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: var(--text-bright);
+      margin-bottom: 20px;
+      text-wrap: balance;
+    }
+
+    h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-bright);
+      margin-bottom: 6px;
+      text-wrap: balance;
+    }
+
+    p { color: var(--text-dim); margin-bottom: 14px; }
+    p:last-child { margin-bottom: 0; }
+
+    /* ─── Callout quote ─── */
+    .callout {
+      border-left: 2px solid var(--accent);
+      padding: 14px 20px;
+      background: var(--accent-faint);
+      border-radius: 0 4px 4px 0;
+      margin: 28px 0;
+    }
+
+    .callout p {
+      font-size: 14px;
+      color: var(--text);
+      font-style: italic;
+      margin: 0;
+    }
+
+    /* ─── Why list ─── */
+    .why-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 28px;
+    }
+
+    .why-item {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 16px 20px;
+      transition: border-color 0.15s;
+    }
+
+    .why-item:hover { border-color: var(--border-h); }
+
+    .why-item p {
+      font-size: 13px;
+      margin: 0;
+      color: var(--text-dim);
+    }
+
+    /* ─── Architecture diagram ─── */
+    .diagram-block {
+      background: rgba(4, 6, 18, 0.75);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 24px 28px;
+      font-family: var(--mono);
+      font-size: 11.5px;
+      line-height: 1.6;
+      color: #4a7aee;
+      overflow-x: auto;
+      margin: 28px 0;
+      white-space: pre;
+    }
+
+    /* ─── Ecosystem ─── */
+    .eco-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 28px;
+    }
+
+    .eco-card {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 22px 24px;
+      transition: border-color 0.15s;
+    }
+
+    .eco-card:hover { border-color: var(--border-h); }
+
+    .eco-tag {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.14em;
+      color: var(--accent);
+      text-transform: uppercase;
+      opacity: 0.65;
+      margin-bottom: 8px;
+    }
+
+    .eco-card p {
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    /* ─── Principles ─── */
+    .principles-list {
+      list-style: none;
+      margin-top: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .principles-list li {
+      display: flex;
+      gap: 16px;
+      align-items: baseline;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+    }
+
+    .principles-list li:first-child { border-top: 1px solid var(--border); }
+
+    .principle-name {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+      min-width: 140px;
+      flex-shrink: 0;
+    }
+
+    .principle-desc { color: var(--text-dim); line-height: 1.6; }
+
+    /* ─── Status ─── */
+    .status-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .status-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #4ade80;
+      flex-shrink: 0;
+      animation: pulse 2.4s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%,100% { box-shadow: 0 0 0 0 rgba(74,222,128,0.4); }
+      50%      { box-shadow: 0 0 0 5px rgba(74,222,128,0); }
+    }
+
+    .status-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      color: #4ade80;
+    }
+
+    /* ─── Blog / Updates ─── */
+    .filter-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .filter-months {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+      padding-left: 2px;
+      margin-bottom: 24px;
+      min-height: 0;
+    }
+
+    .filter-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      color: var(--text-dim);
+      margin-right: 4px;
+    }
+
+    .pill {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      padding: 3px 10px;
+      border-radius: 3px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: all 0.12s;
+      white-space: nowrap;
+    }
+
+    .pill:hover { border-color: var(--border-h); color: var(--text); }
+    .pill.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* Blog post list */
+    .post-list {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .post-row {
+      display: flex;
+      gap: 24px;
+      align-items: baseline;
+      padding: 18px 0;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.12s;
+      text-decoration: none;
+    }
+
+    .post-row:first-child { border-top: 1px solid var(--border); }
+    .post-row:hover .post-title { color: var(--accent); }
+    .post-row:hover .post-arrow { opacity: 1; transform: translateX(2px); }
+
+    .post-date-col {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--accent);
+      min-width: 74px;
+      flex-shrink: 0;
+      opacity: 0.75;
+      padding-top: 1px;
+    }
+
+    .post-body { flex: 1; min-width: 0; }
+
+    .post-title {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-bright);
+      margin-bottom: 3px;
+      transition: color 0.12s;
+    }
+
+    .post-excerpt {
+      font-size: 13px;
+      color: var(--text-dim);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin: 0;
+    }
+
+    .post-tags-row {
+      display: flex;
+      gap: 5px;
+      margin-top: 6px;
+    }
+
+    .post-tag {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.06em;
+      color: var(--text-dim);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 1px 6px;
+    }
+
+    .post-arrow {
+      font-size: 13px;
+      color: var(--accent);
+      opacity: 0.3;
+      flex-shrink: 0;
+      transition: all 0.12s;
+      align-self: center;
+    }
+
+    .empty-state {
+      padding: 48px 0;
+      text-align: center;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text-dim);
+      opacity: 0.5;
+    }
+
+    /* ─── Post overlay ─── */
+    .post-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: rgba(8, 10, 20, 0.97);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      overflow-y: auto;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .post-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .post-overlay-bar {
+      position: sticky;
+      top: 0;
+      background: rgba(8, 10, 20, 0.92);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      z-index: 10;
+    }
+
+    .post-back {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+      background: none;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.12s;
+      padding: 0;
+    }
+
+    .post-back:hover { color: var(--text); }
+
+    .post-overlay-meta {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-left: auto;
+      opacity: 0.6;
+    }
+
+    .post-overlay-content {
+      max-width: 660px;
+      margin: 0 auto;
+      padding: 60px 28px 120px;
+    }
+
+    /* ─── Markdown body ─── */
+    .md-body h1, .md-body h2, .md-body h3, .md-body h4 {
+      color: var(--text-bright);
+      font-weight: 600;
+      text-wrap: balance;
+    }
+    .md-body h1 { font-size: 28px; margin: 48px 0 14px; }
+    .md-body h2 { font-size: 22px; margin: 40px 0 12px; }
+    .md-body h3 { font-size: 17px; margin: 28px 0 8px; }
+    .md-body h1:first-child { margin-top: 0; }
+    .md-body p { color: var(--text-dim); margin-bottom: 16px; line-height: 1.78; }
+    .md-body ul, .md-body ol { color: var(--text-dim); margin: 0 0 16px 20px; }
+    .md-body li { margin-bottom: 6px; line-height: 1.7; }
+    .md-body strong { color: var(--text); font-weight: 600; }
+    .md-body em { font-style: italic; }
+    .md-body a { color: var(--accent); }
+    .md-body blockquote {
+      border-left: 2px solid var(--accent);
+      padding: 12px 18px;
+      background: var(--accent-faint);
+      border-radius: 0 4px 4px 0;
+      margin: 20px 0;
+    }
+    .md-body blockquote p { color: var(--text); font-style: italic; margin: 0; }
+    .md-body code {
+      font-family: var(--mono);
+      font-size: 12px;
+      background: rgba(61, 110, 255, 0.08);
+      border-radius: 3px;
+      padding: 1px 5px;
+      color: #7aa0ff;
+    }
+    .md-body pre {
+      background: rgba(4, 6, 18, 0.8);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 16px 20px;
+      overflow-x: auto;
+      margin: 16px 0;
+    }
+    .md-body pre code {
+      background: none; padding: 0;
+      font-size: 12px; color: #4a7aee;
+    }
+    .md-body hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 36px 0;
+    }
+    .md-body table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin: 20px 0;
+    }
+    .md-body th, .md-body td {
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      text-align: left;
+    }
+    .md-body th { color: var(--text); background: var(--surface-2); }
+
+    /* ─── Footer ─── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .footer-left {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      opacity: 0.5;
+    }
+
+    .footer-right {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+      opacity: 0.35;
+    }
+
+    /* ─── Responsive ─── */
+    @media (max-width: 600px) {
+      .nav-links { gap: 16px; }
+      .nav-links a:not(.nav-gh):not(:last-child) { display: none; }
+      section { padding: 64px 20px; }
+      .why-grid { grid-template-columns: 1fr; }
+      .eco-grid { grid-template-columns: 1fr; }
+      .post-row { gap: 14px; }
+      .post-date-col { min-width: 58px; }
+      footer { flex-direction: column; gap: 6px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .hero h1 { animation: none; }
+      .scroll-hint .arr { animation: none; }
+      .status-dot { animation: none; }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="rain"></canvas>
+
+<div class="wrap">
+
+  <!-- Nav -->
+  <nav>
+    <a class="nav-logo" href="#">ATHENA</a>
+    <div class="nav-links">
+      <a href="#about">About</a>
+      <a href="#ecosystem">Ecosystem</a>
+      <a href="#updates">Updates</a>
+      <a class="nav-gh" href="https://github.com" target="_blank" rel="noopener">GitHub ↗</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <div class="inner">
+    <section class="hero">
+      <div class="hero-eyebrow">Open Source · Model Agnostic</div>
+      <h1>ATHENA</h1>
+      <div class="hero-sub">An AI Harness &amp; Ecosystem</div>
+      <p class="hero-desc">
+        A central environment for language models, tools, agents, memory, events and approvals —
+        built to extend AI beyond the chat window and into the devices and spaces around you.
+      </p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="https://github.com" target="_blank" rel="noopener">View on GitHub</a>
+        <a class="btn btn-ghost" href="#about">Explore ↓</a>
+      </div>
+      <div class="scroll-hint">
+        <span class="arr">↓</span> scroll to explore
+      </div>
+    </section>
+  </div>
+
+  <div class="fade-rule"></div>
+
+  <!-- About -->
+  <div class="inner">
+    <section id="about">
+      <div class="section-label">Why Athena</div>
+      <h2>Built from eight months of frustration</h2>
+      <p>
+        Every existing harness does some things brilliantly and others barely at all.
+        Athena started as a personal attempt to build the one that didn't.
+      </p>
+
+      <div class="callout">
+        <p>Athena is the core. Everything around it extends what Athena can know, where it can exist, and how you can interact with it.</p>
+      </div>
+
+      <div class="why-grid">
+        <div class="why-item">
+          <h3>Full context control</h3>
+          <p>Choose exactly which tool schemas are included, what gets sent between turns, and when to compact. No invisible token burn.</p>
+        </div>
+        <div class="why-item">
+          <h3>Truly model agnostic</h3>
+          <p>Local models, cloud providers, reasoning models, small specialists — swap freely based on task, speed, privacy, and hardware.</p>
+        </div>
+        <div class="why-item">
+          <h3>Human-in-the-loop</h3>
+          <p>Sensitive actions can be paused and approved through any connected interface — including from your wrist.</p>
+        </div>
+        <div class="why-item">
+          <h3>Your data, legible</h3>
+          <p>How information about you is stored and used is not obfuscated. Memory and retrieval are explicit, inspectable, and yours.</p>
+        </div>
+        <div class="why-item">
+          <h3>Deterministic events</h3>
+          <p>The harness knows what it is doing because it is the one doing it. Tool state, approvals, and activity are sourced from the infrastructure, not the model.</p>
+        </div>
+        <div class="why-item">
+          <h3>Interfaces fit the moment</h3>
+          <p>Chat is one interface. A knowledge graph is another. A watch. A sheet of e-paper. Athena shouldn't care which one you reach for.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="fade-rule"></div>
+
+  <!-- Architecture -->
+  <div class="inner">
+    <section id="architecture">
+      <div class="section-label">Architecture</div>
+      <h2>The harness is the orchestration layer</h2>
+      <p>
+        Models are interchangeable reasoning components. The harness coordinates everything around them —
+        tools, memory, agents, events, and approvals.
+      </p>
+
+      <div class="diagram-block">                      ┌─────────────────────┐
+                      │       ATHENA        │
+                      │     AI Harness      │
+                      │    &amp; Ecosystem      │
+                      └──────────┬──────────┘
+                                 │
+                      ┌──────────▼──────────┐
+                      │   ATHENA HARNESS    │
+                      │                     │
+                      │   Models / LLMs     │
+                      │   Tool Calling      │
+                      │   Agents            │
+                      │   Memory            │
+                      │   Events            │
+                      │   Approvals  /  API │
+                      └──────────┬──────────┘
+                                 │
+                      Athena API / Events
+                                 │
+           ┌─────────────────────┼─────────────────────┐
+           │                     │                     │
+           ▼                     ▼                     ▼
+     Athena Mini            Galaxy Watch          reMarkable
+      / Obsidian             Companion             Companion
+           │
+           └──────────────┐
+                          │
+                    Identity Engine</div>
+
+      <p>
+        A new interface doesn't need its own AI. It only needs to understand Athena.
+      </p>
+    </section>
+  </div>
+
+  <div class="fade-rule"></div>
+
+  <!-- Ecosystem -->
+  <div class="inner">
+    <section id="ecosystem">
+      <div class="section-label">Ecosystem</div>
+      <h2>Companion projects extend Athena's reach</h2>
+      <p>
+        None of these are required for Athena to function. They exist to broaden where Athena can know things,
+        and what you can do from where you are.
+      </p>
+      <div class="eco-grid">
+        <div class="eco-card">
+          <div class="eco-tag">Knowledge · Obsidian</div>
+          <h3>Athena Mini</h3>
+          <p>Brings Athena into an Obsidian vault. Semantic retrieval, embeddings, vector search, and a knowledge graph that lights up as Athena reads or edits — because those events originate from real harness operations.</p>
+        </div>
+        <div class="eco-card">
+          <div class="eco-tag">Identity · Memory</div>
+          <h3>Identity Engine</h3>
+          <p>A structured record of daily life — events, decisions, observations — that builds searchable personal history over time. Gives Athena context about the person using it, and gives you a dataset about yourself you can actually query.</p>
+        </div>
+        <div class="eco-card">
+          <div class="eco-tag">Wearable · Galaxy Watch</div>
+          <h3>Watch Companion</h3>
+          <p>Remote approval and system presence on the wrist. When Athena pauses for human confirmation, the request appears on the watch. Also gives Athena an emotive face — a small visual presence that reacts to what the harness is doing.</p>
+        </div>
+        <div class="eco-card">
+          <div class="eco-tag">Documents · e-Paper</div>
+          <h3>reMarkable Companion</h3>
+          <p>File exchange, PDF workflows, and deeper Athena integration on an e-paper device. A quiet, paper-like environment instead of another dashboard — with longer-term interest in handwritten work moving back into Athena.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="fade-rule"></div>
+
+  <!-- Principles -->
+  <div class="inner">
+    <section id="principles">
+      <div class="section-label">Design Principles</div>
+      <h2>What guides the build</h2>
+      <ul class="principles-list">
+        <li>
+          <span class="principle-name">Local first</span>
+          <span class="principle-desc">Local models and local data are first-class. Cloud services can be useful, but Athena should not depend on them.</span>
+        </li>
+        <li>
+          <span class="principle-name">Model independence</span>
+          <span class="principle-desc">Models change quickly. The surrounding system should survive them.</span>
+        </li>
+        <li>
+          <span class="principle-name">Deterministic infra</span>
+          <span class="principle-desc">If the harness already knows something happened, the model shouldn't need to describe it. Events, state, and approvals belong to software.</span>
+        </li>
+        <li>
+          <span class="principle-name">Human control</span>
+          <span class="principle-desc">Powerful actions are inspectable and, where appropriate, require explicit approval before they happen.</span>
+        </li>
+        <li>
+          <span class="principle-name">Context is leverage</span>
+          <span class="principle-desc">Good retrieval and memory can improve a system more than simply using a larger model.</span>
+        </li>
+        <li>
+          <span class="principle-name">Build to understand</span>
+          <span class="principle-desc">Athena is also an experiment. Part of its purpose is exploring how these systems work when individual pieces are exposed, modified, and connected in unusual ways.</span>
+        </li>
+      </ul>
+    </section>
+  </div>
+
+  <div class="fade-rule"></div>
+
+  <!-- Updates / Blog -->
+  <div class="inner">
+    <section id="updates">
+      <div class="section-label">Updates</div>
+      <div class="status-row">
+        <div class="status-dot"></div>
+        <span class="status-label">Active development</span>
+      </div>
+      <h2>Project log</h2>
+      <p>Architecture, experiments, and notes from building Athena.</p>
+
+      <div id="filter-bar" class="filter-row" style="margin-top: 28px;"></div>
+      <div id="filter-months" class="filter-months"></div>
+
+      <div id="posts-list" class="post-list">
+        <div class="empty-state">Loading posts…</div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Footer -->
+  <div class="fade-rule"></div>
+  <footer class="inner" style="max-width:100%;padding-left:28px;padding-right:28px;">
+    <span class="footer-left">Athena Harness &amp; Ecosystem — Apache 2.0 — © 2026</span>
+    <span class="footer-right">OPEN SOURCE · MODEL AGNOSTIC · EXPERIMENTAL</span>
+  </footer>
+
+</div><!-- .wrap -->
+
+<!-- Post overlay -->
+<div id="post-overlay" class="post-overlay" role="dialog" aria-modal="true" aria-label="Post reader">
+  <div class="post-overlay-bar">
+    <button class="post-back" onclick="closePost()">← Back to updates</button>
+    <div class="post-overlay-meta" id="post-meta"></div>
+  </div>
+  <div class="post-overlay-content">
+    <div id="post-content" class="md-body"></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+/* ================================================================
+   GLYPH RAIN
+   ================================================================ */
+
+const GLYPHS = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789@#$%^&*[]{}|<>';
+const COL_W   = 16;
+const FONT_SZ = 13;
+const RC = 111, GC = 173, BC = 251; // #6fadfb
+const DENSITY = 0.07; // fraction of columns active at once — keep it sparse
+
+function rndGlyph() {
+  return GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
+}
+
+function startRain(canvas) {
+  const ctx = canvas.getContext('2d');
+  let W, H, drops, maxActive;
+  const mouse = { x: -9999, y: -9999 };
+
+  function makeDrop(col, initial) {
+    const len = 10 + Math.floor(Math.random() * 18);
+    return {
+      col,
+      y:        initial ? Math.random() * (H / COL_W) : -(len + Math.floor(Math.random() * 20)),
+      speed:    0.025 + Math.random() * 0.055,
+      len,
+      chars:    Array.from({ length: len }, rndGlyph),
+      ticker:   0,
+      active:   true,
+      cooldown: 0,
+    };
+  }
+
+  function countActive() {
+    let n = 0;
+    for (const d of drops) if (d.active) n++;
+    return n;
+  }
+
+  function init() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    const cols = Math.ceil(W / COL_W);
+
+    // Hard cap: never more than this many drops at once
+    maxActive = Math.max(3, Math.round(cols * DENSITY));
+
+    // All columns start inactive with staggered cooldowns
+    drops = Array.from({ length: cols }, (_, i) => ({
+      col: i, active: false,
+      cooldown: 10 + Math.floor(Math.random() * 250),
+      y: 0, speed: 0, len: 0, chars: [], ticker: 0,
+    }));
+
+    // Activate exactly maxActive randomly chosen columns immediately
+    const idx = Array.from({ length: cols }, (_, i) => i);
+    for (let i = cols - 1; i > 0; i--) {      // Fisher-Yates shuffle
+      const j = Math.floor(Math.random() * (i + 1));
+      [idx[i], idx[j]] = [idx[j], idx[i]];
+    }
+    idx.slice(0, maxActive).forEach(col => {
+      Object.assign(drops[col], makeDrop(col, true));
+    });
+  }
+
+  init();
+  window.addEventListener('resize', init);
+  document.addEventListener('mousemove', e => {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+  });
+
+  ctx.font = `${FONT_SZ}px "Courier New", Courier, monospace`;
+  ctx.textBaseline = 'top';
+
+  function frame() {
+    ctx.clearRect(0, 0, W, H);
+
+    // Mouse cursor light pool
+    if (mouse.x > -100) {
+      const mg = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 240);
+      mg.addColorStop(0,   `rgba(${RC},${GC},${BC},0.07)`);
+      mg.addColorStop(0.4, `rgba(${RC},${GC},${BC},0.03)`);
+      mg.addColorStop(1,   `rgba(${RC},${GC},${BC},0)`);
+      ctx.fillStyle = mg;
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    for (const drop of drops) {
+      if (!drop.active) {
+        drop.cooldown--;
+        if (drop.cooldown <= 0) {
+          // Only restart if we're still under the cap
+          if (countActive() < maxActive) {
+            Object.assign(drop, makeDrop(drop.col, false));
+          } else {
+            drop.cooldown = 40 + Math.floor(Math.random() * 80); // check again later
+          }
+        }
+        continue;
+      }
+
+      const x = drop.col * COL_W;
+
+      for (let j = 0; j < drop.len; j++) {
+        const py = (drop.y - j) * COL_W;
+        if (py < -COL_W || py > H) continue;
+
+        // Mouse proximity surge
+        const dx   = x - mouse.x;
+        const dy   = py - mouse.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const mb   = Math.max(0, 1 - dist / 170) * 0.65;
+
+        // Steep trail falloff — fades to full transparency
+        const trail = j === 0 ? 1.0 : Math.pow(Math.max(0, 1 - j / drop.len), 2.4);
+        const alpha = Math.min(1, trail * 0.88 + mb * 0.35);
+        if (alpha < 0.01) continue;
+
+        ctx.fillStyle = `rgba(${RC},${GC},${BC},${alpha})`;
+        ctx.fillText(drop.chars[j], x, py);
+      }
+
+      drop.ticker++;
+      if (drop.ticker >= 12) {
+        drop.ticker = 0;
+        drop.chars[Math.floor(Math.random() * drop.len)] = rndGlyph();
+      }
+
+      drop.y += drop.speed;
+
+      if ((drop.y - drop.len) * COL_W > H) {
+        drop.active   = false;
+        drop.cooldown = 180 + Math.floor(Math.random() * 500);
+      }
+    }
+
+    requestAnimationFrame(frame);
+  }
+
+  frame();
+}
+
+startRain(document.getElementById('rain'));
+
+
+/* ================================================================
+   BLOG / UPDATES
+   ================================================================ */
+
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+let allPosts     = [];
+let activeYear   = 'all';
+let activeMonth  = 'all';
+
+function fmt(dateStr) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  return `${MONTHS[m - 1]} ${d < 10 ? '0' + d : d}`;
+}
+
+function fmtLong(dateStr) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  return `${MONTHS[m - 1]} ${d}, ${y}`;
+}
+
+async function loadPosts() {
+  const list = document.getElementById('posts-list');
+  try {
+    const r = await fetch('posts/index.json');
+    if (!r.ok) throw new Error();
+    allPosts = await r.json();
+    // Sort newest first
+    allPosts.sort((a, b) => b.date.localeCompare(a.date));
+    renderFilter();
+    renderPosts();
+  } catch {
+    list.innerHTML = '<div class="empty-state">No posts yet — check back soon.</div>';
+    document.getElementById('filter-bar').style.display = 'none';
+  }
+}
+
+function years() {
+  return [...new Set(allPosts.map(p => p.date.slice(0, 4)))].sort().reverse();
+}
+
+function monthsIn(year) {
+  return [...new Set(
+    allPosts
+      .filter(p => p.date.startsWith(year))
+      .map(p => Number(p.date.slice(5, 7)))
+  )].sort((a, b) => a - b);
+}
+
+function filtered() {
+  return allPosts.filter(p => {
+    if (activeYear !== 'all' && !p.date.startsWith(activeYear)) return false;
+    if (activeMonth !== 'all' && Number(p.date.slice(5, 7)) !== Number(activeMonth)) return false;
+    return true;
+  });
+}
+
+function renderFilter() {
+  const bar    = document.getElementById('filter-bar');
+  const mbar   = document.getElementById('filter-months');
+  const yrList = years();
+  if (yrList.length === 0) {
+    bar.style.display = 'none';
+    return;
+  }
+
+  bar.innerHTML = '<span class="filter-label">YEAR</span>';
+  const allBtn = document.createElement('button');
+  allBtn.className = 'pill' + (activeYear === 'all' ? ' active' : '');
+  allBtn.textContent = 'All';
+  allBtn.onclick = () => { activeYear = 'all'; activeMonth = 'all'; renderFilter(); renderPosts(); };
+  bar.appendChild(allBtn);
+
+  yrList.forEach(y => {
+    const btn = document.createElement('button');
+    btn.className = 'pill' + (activeYear === y ? ' active' : '');
+    btn.textContent = y;
+    btn.onclick = () => { activeYear = y; activeMonth = 'all'; renderFilter(); renderPosts(); };
+    bar.appendChild(btn);
+  });
+
+  // Month row
+  mbar.innerHTML = '';
+  if (activeYear !== 'all') {
+    const mns = monthsIn(activeYear);
+    if (mns.length > 1) {
+      const allM = document.createElement('button');
+      allM.className = 'pill' + (activeMonth === 'all' ? ' active' : '');
+      allM.textContent = 'All months';
+      allM.onclick = () => { activeMonth = 'all'; renderFilter(); renderPosts(); };
+      mbar.appendChild(allM);
+
+      mns.forEach(m => {
+        const mb = document.createElement('button');
+        mb.className = 'pill' + (activeMonth === String(m) ? ' active' : '');
+        mb.textContent = MONTHS[m - 1];
+        mb.onclick = () => { activeMonth = String(m); renderFilter(); renderPosts(); };
+        mbar.appendChild(mb);
+      });
+    }
+  }
+}
+
+function renderPosts() {
+  const list  = document.getElementById('posts-list');
+  const posts = filtered();
+
+  if (posts.length === 0) {
+    list.innerHTML = '<div class="empty-state">No posts for this period.</div>';
+    return;
+  }
+
+  list.innerHTML = '';
+  posts.forEach(p => {
+    const row = document.createElement('div');
+    row.className = 'post-row';
+    row.setAttribute('role', 'button');
+    row.setAttribute('tabindex', '0');
+    row.setAttribute('aria-label', p.title);
+
+    const tagsHtml = (p.tags || []).map(t =>
+      `<span class="post-tag">${t}</span>`
+    ).join('');
+
+    row.innerHTML = `
+      <div class="post-date-col">${fmt(p.date)}</div>
+      <div class="post-body">
+        <div class="post-title">${p.title}</div>
+        ${p.summary ? `<p class="post-excerpt">${p.summary}</p>` : ''}
+        ${tagsHtml ? `<div class="post-tags-row">${tagsHtml}</div>` : ''}
+      </div>
+      <div class="post-arrow">→</div>
+    `;
+
+    const open = () => openPost(p);
+    row.addEventListener('click', open);
+    row.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') open(); });
+    list.appendChild(row);
+  });
+}
+
+async function openPost(post) {
+  const overlay  = document.getElementById('post-overlay');
+  const content  = document.getElementById('post-content');
+  const meta     = document.getElementById('post-meta');
+
+  content.innerHTML = '<p style="color:var(--text-dim);font-family:var(--mono);font-size:12px">Loading…</p>';
+  meta.textContent  = fmtLong(post.date);
+
+  overlay.classList.add('open');
+  overlay.scrollTop = 0;
+  document.body.style.overflow = 'hidden';
+
+  try {
+    const r    = await fetch(post.file);
+    if (!r.ok) throw new Error();
+    const text = await r.text();
+
+    if (typeof marked !== 'undefined') {
+      content.innerHTML = marked.parse(text);
+    } else {
+      const pre = document.createElement('pre');
+      pre.style.cssText = 'white-space:pre-wrap;color:var(--text-dim);font-size:13px;line-height:1.7';
+      pre.textContent = text;
+      content.innerHTML = '';
+      content.appendChild(pre);
+    }
+  } catch {
+    content.innerHTML = '<p style="color:var(--text-dim);font-size:14px">Post could not be loaded.</p>';
+  }
+}
+
+function closePost() {
+  document.getElementById('post-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closePost();
+});
+
+loadPosts();
+</script>
+
+</body>
+</html>
