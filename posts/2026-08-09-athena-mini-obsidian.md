@@ -8,9 +8,7 @@ It was important to me that this implementation is not just another chatbot past
 
 Athena Mini is the early result of that experiment.
 
-![Book logo](/least-github-pages/assets/logo.png)
-
-![Athena Mini inside Obsidian](/assets/AthenaMiniObsidian.png)
+![Athena Mini inside Obsidian](</assets/Athena Mini - Obsidian.png>)
 
 ---
 
