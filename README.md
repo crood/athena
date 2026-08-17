@@ -707,7 +707,7 @@ That's what makes building it interesting.
 **Athena is an experiment in what an AI system can become when the model is only the beginning.**
 
 ![Athena](Athena.png)
-![Athena Mini - Obsidian](Athena Mini.png)
+![Athena Mini - Obsidian](Athena Mini - Obsidian.png)
 
 
 
