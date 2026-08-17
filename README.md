@@ -1,4 +1,4 @@
-![Athena](Athena.svg)
+![Athena](Athena.png)
 # Athena
 
 ### An open-source AI Harness & Ecosystem
