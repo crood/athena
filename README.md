@@ -706,5 +706,8 @@ That's what makes building it interesting.
 
 **Athena is an experiment in what an AI system can become when the model is only the beginning.**
 
-![https://github.com/crood/athena/blob/main/Athena.md]
+![Athena](Athena.png)
+![Athena Mini](Athena.png)
+
+
 
