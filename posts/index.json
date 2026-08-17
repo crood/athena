@@ -14,5 +14,13 @@
     "summary": "The case for sourcing system state from the infrastructure itself rather than from model output — and what this makes possible.",
     "file": "posts/2026-08-10-event-driven-architecture.md",
     "tags": ["architecture", "events"]
+  },
+    {
+    "id": "athena-mini-obsidian",
+    "title": "Athena Mini - Obsidian - A Visible Co-Existence",
+    "date": "2026-08-09",
+    "summary": "Early results from bringing Athena into an Obsidian vault.",
+    "file": "posts/2026-08-09-athena-mini-obsidian.md",
+    "tags": ["obsidian", "mini", "knowledge"]
   }
 ]
