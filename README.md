@@ -12,29 +12,55 @@ Around the core Harness sits a growing ecosystem of experiments and companion pr
 
 ---
 
-## 🌌 Why Athena?
+## 🌌 Why I've begun to build Athena?
 
-Most interaction with language models still looks something like this:
+For the last 8 month I had been using or testing pretty much every available harness solution out there.
+The "big ones" (Claude, Codex, Cusrsor, etc.)
+And a bunch of open source solutions (Pi, Goose, Hermes, Odysseus, OpenClaw, AnythingLM, etc.)
 
-```text
-Human → Chat Window → Model → Response
-```
+Most of the times I've found:
+- some things amazingly well
+- some features are barely usable
+- they lack a specific feature I'd deem required, and which need to be added with "work-arounds"
+- they require docker or other additions to run to their full extend
+- have some or all features locked behind a paywall
+- don't play well with local models
+- are bloating the context window with tool description, schema, unoptimized tool calls, and often lack a well thought through compaction.
+- (on paid Harnesses this eats through your tokens, and with local models makes it impossible to use without strong hardware)
+- don't work well with all series of models, are not truly model agnostic
 
-Athena started from a different question:
 
-**What if the model was only one component of a larger system?**
+and most importantly:
 
-A system that can:
+- with the likes of Claude and Codex:
+  - they function amazing, but there is no control over how much data you send back and forth between turns, 
+  - which tool schema to include / exclude, 
+  - what additional agents are spawned spawned under the hood to take take of parts of the user requests,
+  - and if there are settings for this you have to manually switch these around for every session window.
+  - They are bloated and made to work for a broad audience.
+  - Your data is not truly 'yours'.
+  
+- with open source / local solutions:
+  - Feature list, and control over the harness differ a lot between each solution.
+  - They are someone's vision of what a perfect Harness should be capable of doing, but not mine.
 
-* work with different local and remote models
-* use real tools
+And none of them is really connected to "you".
+Whilst tools, skills and MPCs widen their horizon, and they can read your folder/vault full of of markdown files or notes, 
+how the information about you is precisely stored or used is obfuscated and not directly controllable.
+
+What I've wanted to build is, a system that can:
+
+* work agnostic with different local and remote models
 * interact with external applications and devices
-* maintain useful memory and context
+* maintain 'useful' memory and context
 * expose what it is currently doing
-* request approval before performing sensitive actions
+* full control over request approval before performing sensitive actions
 * work with personal knowledge
 * interact through interfaces other than chat
-* gradually build useful context about the person using it
+* gradually build 'useful' context about the person using it
+* give full control over optimisation of tool calls
+* reduce token usage to the absolute required minimum for a given task, without the hassle of changing settings every few minutes.
+* control what the harness deems as confident data retrieval 
 
 Athena is an ongoing attempt to build that system.
 
