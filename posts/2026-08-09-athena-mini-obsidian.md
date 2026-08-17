@@ -1,4 +1,4 @@
-![Athena Mini inside Obsidian](<../assets/AthenaMini.png>)
+![Athena Mini inside Obsidian](<assets/AthenaMini.png>)
 
 # Athena Mini - First Look Inside Obsidian
 
@@ -8,7 +8,7 @@ It was important to me that this implementation is not just another chatbot past
 
 Athena Mini is the early result of that experiment.
 
-![Athena Mini inside Obsidian](<../assets/Athena Mini - Obsidian.png>)
+![Athena Mini inside Obsidian](<assets/Athena Mini - Obsidian.png>)
 
 ---
 
@@ -26,7 +26,7 @@ The approach combines a few things:
 
 That last point is the part that's hardest to replicate with a third-party plugin. Most "AI in Obsidian" tools are stateless. They call an API and display the result. Athena Mini knows what it's doing because the harness knows what it's doing.
 
-![Athena — system overview](<../assets/GraphBackend.png>)
+![Athena — system overview](<assets/GraphBackend.png>)
 `database, embedding models and structural graph YAML index settings`
 
 ---
@@ -37,14 +37,14 @@ The most interesting design territory is using Obsidian's graph view not just fo
 
 When Athena reads a note to answer a question, that note can be highlighted in the graph. When it edits or annotates something, the change is visible as a graph state, not just a file diff. The result is a kind of spatial awareness. You can watch Athena move through your knowledge base in real time.
 
-![Athena — system overview](<../assets/Athena Mini - Obsidian_Graph.png>)
+![Athena — system overview](<assets/Athena Mini - Obsidian_Graph.png>)
 `user activity in the knowledge graph`
 
 ---
 
 This isn't cosmetic. It makes the system's reasoning more legible. If Athena answers a question about a project and you can see it moved through three specific notes to get there, you understand something about the quality of the answer that you wouldn't get from the text alone.
 
-![Athena — system overview](<../assets/Athena Mini - Obsidian_Graph2.png>)
+![Athena — system overview](<assets/Athena Mini - Obsidian_Graph2.png>)
 `athena mini - traversing the knowledge graph (pink nodes)`
 
 ---
