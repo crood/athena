@@ -10,6 +10,8 @@ Around the core Harness sits a growing ecosystem of experiments and companion pr
 
 > **Athena is the core. Everything around it extends what Athena can know, where it can exist, and how you can interact with it.**
 
+[Athna Blog](https://crood.github.io/athena/)
+
 ---
 
 ## 🌌 Why I've begun to build Athena?
